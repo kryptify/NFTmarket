@@ -78,7 +78,7 @@ export default function Wallet() {
         if (!isMetamaskInstalled) {
             return (
             <a
-                target="_blank"
+                target="blank"
                 className="btn btn-clear"
                 href="https://metamask.io/download"
             >
