@@ -26,11 +26,20 @@ import { Icon } from '@iconify/react';
 import userLock from '@iconify/icons-fa-solid/user-lock';
 
 export default function Wallet() {
-    const { account, active, library, chainId } = useWeb3React();
+    const { connectWallet, account, disconnectWallet, active } = useWallet();
 
+    
     const anchorRef = useRef(null);
-
+    
     const [open, setOpen] = useState(false);
+    
+    const [currentaccount, setCurrentaccount] = useState(null)
+    const [currentactive, setCurrentactive] = useState(null)
+    
+    useEffect(() => {
+        setCurrentaccount(account);
+        setCurrentactive(active);
+    }, [account, active])
 
     let logoImageUrl = null;
 
@@ -64,8 +73,6 @@ export default function Wallet() {
         isMetaMaskInstalled();
       }, []);
     
-      const { connectWallet, disconnectWallet } = useWallet();
-
     async function connect(m) {
         await connectWallet(m);
         setShow(false);
@@ -134,7 +141,7 @@ export default function Wallet() {
                     }
                 }}
             >
-                {account ? (
+                {currentactive ? (
                         <>
                             <Link
                                 underline="none"
@@ -178,18 +185,18 @@ export default function Wallet() {
                                 <Link
                                     color="inherit"
                                     target="_blank"
-                                    href={`https://explorer.testnet.mantle.xyz/address/${account}`}
+                                    href={`https://explorer.testnet.mantle.xyz/address/${currentaccount}`}
                                     rel="noreferrer noopener nofollow"
                                 >
                                     <Typography align="center" style={{ wordWrap: "break-word" }} variant="body2" sx={{ width: 180, color: 'text.secondary' }} >
-                                        {account}
+                                        {currentaccount}
                                     </Typography>
                                 </Link>
                                 <Stack direction="row" spacing={1}>
                                     <Button variant="contained" onClick={handleLogout} size="small">
                                         Logout
                                     </Button>
-                                    <CopyToClipboard text={account} onCopy={()=>{}}>
+                                    <CopyToClipboard text={currentaccount} onCopy={()=>{}}>
                                         <Button variant="outlined" size="small">
                                             Copy
                                         </Button>
