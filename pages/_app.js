@@ -4,13 +4,17 @@ import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ContextProvider } from 'src/AppContext';
 import Header from 'src/components/Header';
-// import { MetaMaskProvider } from "src/hooks/useMetaMask";
-// import Web3 from "web3";
-// import { Web3ReactProvider } from "@web3-react/core";
+import { Web3ReactProvider } from "@web3-react/core";
+import { Web3Provider } from "@ethersproject/providers";
+import "styles/globals.css";
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-// function getLibrary(provider, connector) {
-//   return new Web3(provider);
-// }
+function getLibrary(provider) {
+  const library = new Web3Provider(provider);
+  library.pollingInterval = 12000;
+  return library;
+}
 
 // Components
 import XSnackbar from 'src/components/Snackbar';
@@ -34,20 +38,18 @@ function NFTmarket(props) {
                 <meta name="msapplication-TileColor" content="#121619" />
                 <meta name="theme-color" content="#ffffff"/>
             </Head>
-            {/* <Web3ReactProvider getLibrary={getLibrary}>
-                <MetaMaskProvider> */}
-                    <ContextProvider openSnackbar={openSnackbar}>
-                        <ThemeProvider>
-                            <SnackbarProvider maxSnack={3}>
-                                <CssBaseline />
-                                <Header />
-                                <Component {...pageProps}  className="mt-3"/>
-                                <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
-                            </SnackbarProvider>
-                        </ThemeProvider>
-                    </ContextProvider>
-                {/* </MetaMaskProvider>
-            </Web3ReactProvider>     */}
+            <Web3ReactProvider getLibrary={getLibrary}>
+                <ContextProvider openSnackbar={openSnackbar}>
+                    <ThemeProvider>
+                        <SnackbarProvider maxSnack={3}>
+                            <CssBaseline />
+                            <Header />
+                            <Component {...pageProps}/>
+                            <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+                        </SnackbarProvider>
+                    </ThemeProvider>
+                </ContextProvider>
+            </Web3ReactProvider>
         </>
     );
 }

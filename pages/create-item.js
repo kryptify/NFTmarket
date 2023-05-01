@@ -21,6 +21,14 @@ import axios from 'axios'
 import FormData from 'form-data';
 import XSnackbar from 'src/components/Snackbar';
 import { useSnackbar } from 'src/components/useSnackbar';
+import { Modal } from "react-bootstrap";
+
+import { useWeb3React } from "@web3-react/core";
+
+import {
+  createToken,
+  listToken
+} from "src/lib/contractMethods"
 
 export default function Minting() {
 
@@ -33,7 +41,30 @@ export default function Minting() {
   const [fileUrl, setFileUrl] = useState(null)
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [tokenid, setTokenid] = useState(null)
+  const [tokenuri, setTokenuri] = useState(null)
   const create_url = "http://localhost/api/upload"
+  const { account, active, library, chainId } = useWeb3React();
+
+  const [show, setShow] = useState({
+    show: false,
+    title: "",
+    link: "",
+    progress: false,
+    dismiss: false,
+    buttonText: "",
+  });
+  const handleClose = () => setShow(false);
+  function showMintModal(state, title, link, progress, dismiss, buttonText) {
+    setShow({
+      show: state,
+      title,
+      link,
+      progress,
+      dismiss,
+      buttonText,
+    });
+  }
 
   const handleFileSelect = (e) => {
       const pickedFile = e.target.files[0]
@@ -71,6 +102,7 @@ export default function Minting() {
               )
               if(response.result === 'success'){
                 openSnackbar('NFT uploading success')
+                setTokenuri(response.data)
               }
               else{
                 openSnackbar('NFT uploading failed', 'error')
@@ -141,6 +173,60 @@ export default function Minting() {
     )
   }
 
+  async function mintNFT(uri){
+    try{
+      let tx = await createToken(uri, library?.getSigner());
+      showMintModal(
+        true,
+        "Mint submitted",
+        `https://explorer.testnet.mantle.xyz/tx/${tx.hash}`,
+        true,
+        false,
+        ""
+      );
+      tx = await tx.wait(1);
+      showMintModal(
+        true,
+        "Mint Success",
+        `https://explorer.testnet.mantle.xyz/tx/${tx.hash}`,
+        false,
+        true,
+        "Done"
+      );
+      let event = tx.events[0]
+      let value = event.args[2]
+      let tokenId = value.toNumber()
+      setTokenid(tokenId);
+    } catch(e){
+      console.log(e)
+    }
+  }
+
+  async function listNFT(tokenid){
+    try{
+      let tx = await listToken(tokenid, price, library?.getSigner());
+      showMintModal(
+        true,
+        "List submitted",
+        `https://explorer.testnet.mantle.xyz/tx/${tx.hash}`,
+        true,
+        false,
+        ""
+      );
+      tx = await tx.wait(1);
+      showMintModal(
+        true,
+        "List Success",
+        `https://explorer.testnet.mantle.xyz/tx/${tx.hash}`,
+        false,
+        true,
+        "Done"
+      );
+      router.push('/')
+    } catch(e){
+      console.log(e)
+    }
+  }
 
   return (
     <Page title='Create - NFT'>
@@ -208,14 +294,57 @@ export default function Minting() {
           </Typography>
           <NFTUploader />
         </Stack>
-        <Button
-          sx={{ padding: 1, width:'35%' }}
-          onClick={() => setOpen(true)}
-          variant='contained'
-        >
-          Mint NFT
-        </Button>
+        <Stack spacing={2} marginBottom={3} direction="row">
+          <Button
+            sx={{ padding: 1, width:'35%' }}
+            onClick={() => mintNFT(tokenuri)}
+            variant='contained'
+          >
+            Mint NFT
+          </Button>
+          <Button
+            sx={{ padding: 1, width:'35%' }}
+            onClick={() => listNFT(tokenid)}
+            variant='contained'
+          >
+            List NFT
+          </Button>
+        </Stack>
       </Container>
+      <div className="mintmodalcontainer">
+        <Modal show={show.show} onHide={handleClose} className="mymodal">
+          <Modal.Body>
+            <div className="mintmodal">
+              <img
+                src="/success.png"
+                className="mintmodalimage"
+                alt="Mintmodalimage"
+              />
+
+              <h2>{show.title}</h2>
+              <h3>
+                See the transaction on
+                <a href={show.link} target="_blank" rel="noreferrer">
+                  {" "}
+                  Matle Explorer
+                </a>
+              </h3>
+              {show.progress && (
+                <div className="spinner-border text-primary" role="status">
+                  <span className="sr-only"></span>
+                </div>
+              )}
+              <h3>{show.body}</h3>
+
+              {show.dismiss && (
+                <button className="btn herobtn" onClick={handleClose}>
+                  {show.buttonText}
+                </button>
+              )}
+            </div>
+          </Modal.Body>
+        </Modal>
+      </div>
     </Page >
   );
 }

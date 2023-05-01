@@ -38,6 +38,7 @@ import { AppContext } from 'src/AppContext';
 
 // Components
 import Logo from './Logo';
+import Wallet from './Wallet';
 
 const HeaderWrapper = styled(AppBar)(({ theme }) => `
     width: 100%;
@@ -137,6 +138,7 @@ export default function Header() {
                                 >
                                     <Button variant="text">3D Gallery</Button>
                                 </Link>
+                                <Wallet />
                             </>
                         }
                         {!isMobile &&
